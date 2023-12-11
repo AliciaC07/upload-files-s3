@@ -19,13 +19,17 @@ def upload_files(path):
     # Walk through the local directory and its subdirectories
     for subdir, dirs, files in os.walk(path):
         for file in files:
-            # Construct the full local path of the file
             full_path = os.path.join(subdir, file)
 
-            # Open the file in binary mode and upload it to the S3 bucket
+            # Calculate the relative path of the file with respect to the specified path
+            relative_path = os.path.relpath(full_path, path)
+
+            # Replace the system-specific path separator with '/' for S3
+            relative_path = relative_path.replace(os.path.sep, '/')
+
+            # Upload the file to S3 with the full folder structure as part of the key
             with open(full_path, 'rb') as data:
-                # Upload the file to S3 with a key (object name) relative to the specified path
-                bucket.put_object(Key=full_path[len(path) + 1:], Body=data)
+                bucket.put_object(Key=relative_path, Body=data)
 
 
 if __name__ == "__main__":
